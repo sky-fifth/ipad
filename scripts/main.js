@@ -22,6 +22,22 @@ $(document).ready(function (e) {
       gPages = allText.split("===\n");
       console.log("Loaded %i pages.", gPages.length);
 
+      $("body").hammer().on("swipeleft", function (e) {
+        console.log("Swipe left, loading next page.");
+        loadNextPage();
+      }).on("swiperight", function (e) {
+        console.log("Swipe right, loading previous page.");
+        loadPreviousPage();
+      }).on("tap", function (e) {
+        console.log("Tap, playing text.");
+
+        if (window.speechSynthesis.speaking) {
+          console.log("Browser is speaking, will not speaking current page.");
+          return;
+        }
+        speakCurrentPage();
+      });;
+
       $("body").keydown(function (e) {
         switch (e.keyCode) {
           case _KEYCODE_LEFT_ARROW:
@@ -88,13 +104,7 @@ function loadPreviousPage() {
 function loadPage(pageIndex) {
   var pageName = "page" + pageIndex + ".txt";
 
-  // disable existing onend event
-  // and cancel speaking
-  if (gSpeech) {
-    gSpeech.onend = null;
-  }
-  window.speechSynthesis.cancel();
-  gSpeech = null;
+  stopSpeaking();
 
   var pageText = gPages[pageIndex];
   loadRandomFont(pageText);
@@ -136,6 +146,24 @@ function displayPage(pageText, fontFamily) {
   p.text(pageText);
 
   speak(pageText);
+}
+
+function speakCurrentPage() {
+  var p = $(".page");
+  var pageText = p.text();
+
+  //stopSpeaking();
+  speak(pageText);
+}
+
+function stopSpeaking() {
+  // disable existing onend event
+  // and cancel speaking
+  if (gSpeech) {
+    gSpeech.onend = null;
+  }
+  window.speechSynthesis.cancel();
+  gSpeech = null;
 }
 
 function speak(text) {
